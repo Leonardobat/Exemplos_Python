@@ -20,7 +20,7 @@ def gerar_teto(digitos):
 
 num_digitos = randrange(1,4)
 print("Pense um número {0} digitos".format(num_digitos))
-input("Pressione enter para continuar")
+input("Pressione Enter para continuar")
 piso, teto = 0, gerar_teto(num_digitos)
 numero_gerado = randrange(piso, teto)
 acertou = input("O valor é {0}? ".format(numero_gerado)).lower()
