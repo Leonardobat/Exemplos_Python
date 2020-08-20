@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+
+
 palavra_raw = input("Insira a palavra: ")
 letra = input("Qual a letra deseja retirar? ")
 
