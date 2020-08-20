@@ -7,6 +7,7 @@
 """
 from random import randrange
 
+
 def gerar_teto(digitos):
     if digitos == 1:
         teto = 9
@@ -18,7 +19,8 @@ def gerar_teto(digitos):
         teto = 9999
     return teto
 
-num_digitos = randrange(1,4)
+
+num_digitos = randrange(1, 4)
 print("Pense um número {0} digitos".format(num_digitos))
 input("Pressione Enter para continuar")
 piso, teto = 0, gerar_teto(num_digitos)

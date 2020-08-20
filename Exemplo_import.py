@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+""" Exemplo 2 da Aula do Mini Curso de Python.
+
+    Neste arquivo está presente um exemplo de módulo importado.
+    :Author: Leonardo B.
+"""
 import math
 
 capital = float(input("Valor total do Financiamento: "))
@@ -20,7 +26,7 @@ O Financiador ofereceu uma parcela mensal de R$ {2}, o que acarreta em:\n
     valor_parcela,
     montante,
     juros_totais,
-    round(taxa_de_juros*100,2),
-    round(taxa_de_juros_anuais*100,2),
+    round(taxa_de_juros * 100, 2),
+    round(taxa_de_juros_anuais * 100, 2),
 )
 print(msg)

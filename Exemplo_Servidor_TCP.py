@@ -1,46 +1,62 @@
-from socket import *
+#! /bin/env/python
+# -*- coding: utf-8 -*-
+""" Model of a TCP Server.
+
+    This file has a generic implementation of a TCP Server with multiple listeners.
+    :Author: Leonardo B.
+"""
+
+from socket import (
+    socket,
+    AF_INET,
+    SOCK_STREAM,
+    SOL_SOCKET,
+    SO_REUSEADDR,
+)
 import time, sys, threading, errno
 from multiprocessing import Process, Pipe, Queue
 from multiprocessing.connection import wait
 
+
 class ClientThread(threading.Thread):
-    def __init__(self,conn,Tconn,Lconn):
+    def __init__(self, conn, Tconn, Lconn):
         threading.Thread.__init__(self)
         self.pipe = Tconn
         self.list_pipe = Lconn
         self.csocket = conn
         self.addr = self.csocket.getpeername()
-        self.addr = (self.addr[0] + ':' + str(self.addr[1]))
+        self.addr = self.addr[0] + ":" + str(self.addr[1])
 
     def run(self):
         while True:
-            try:            
+            try:
                 if self.pipe.poll():
                     s = self.pipe.recv()
                     if s[0] == self.addr:
                         self.pipe.send(s)
-                        msg = bytes(s[1],'ASCII')
+                        msg = bytes(s[1], "ASCII")
                         self.csocket.send(msg)
                 msg = self.csocket.recv(2048).decode()
                 self.pipe.send(msg)
-                if msg=='HELLO':
-                    self.csocket.send(b'CONNECTED')
+                if msg == "HELLO":
+                    self.csocket.send(b"CONNECTED")
                     name = self.csocket.recv(2048).decode()
-                    info = (name,self.addr)
+                    info = (name, self.addr)
                     self.list_pipe.send(info)
-                    self.csocket.send(b'NAME NOTED')
-                else:                
-                    self.csocket.send(b'OK')
+                    self.csocket.send(b"NAME NOTED")
+                else:
+                    self.csocket.send(b"OK")
             except ConnectionResetError:
                 self.csocket.close()
                 self.list_pipe.send(info)
                 break
         self.pipe.send(("Client: " + self.addr + " Disconnected."))
 
+
 class serverTCP(Process):
-    def __init__(self,sock_conn, client, list_conn):
+    def __init__(self, sock_conn, client, list_conn):
         Process.__init__(self)
-        TCP_Data = ("",20305)
+        TCP_Data = ("", 20305)
         self.pipe = sock_conn
         self.client_pipe = client
         self.list_pipe = list_conn
@@ -50,19 +66,20 @@ class serverTCP(Process):
 
     def run(self):
         self.sock.listen(10)
-        while True:        
+        while True:
             conn, addr = self.sock.accept()
             sock_T = ClientThread(conn, self.client_pipe, self.list_pipe)
             sock_T.start()
-            self.pipe.send(addr[0] + ':' + str(addr[1]))
-            
-class list_IRDevices(Process):
+            self.pipe.send(addr[0] + ":" + str(addr[1]))
+
+
+class list_Devices(Process):
     def __init__(self, conn1, conn2):
         Process.__init__(self)
-        self.dict = {}    
+        self.dict = {}
         self.TCP_pipe = conn1
         self.main_pipe = conn2
-    
+
     def run(self):
         while True:
             a = self.TCP_pipe.recv()
@@ -73,28 +90,30 @@ class list_IRDevices(Process):
                 else:
                     del self.dict[name]
             self.main_pipe.send(self.dict)
-            
-def process_message(s):
-        command = s.split(' ')
-        while True:
-            try:
-                command.remove('')
-            except ValueError:
-                break
-        return command
 
-if __name__ == '__main__':
-    print('Loading')
-    list_conn, client_list = Pipe()   # List to Client
-    main_l_conn, list_TCP_conn = Pipe() # List to Main
-    main_So_conn, TCP_conn = Pipe() # Main to Socket_Server
-    main_conn, client_conn = Pipe() # Main to client
+
+def process_message(s):
+    command = s.split(" ")
+    while True:
+        try:
+            command.remove("")
+        except ValueError:
+            break
+    return command
+
+
+if __name__ == "__main__":
+    print("Loading")
+    list_conn, client_list = Pipe()  # List to Client
+    main_l_conn, list_TCP_conn = Pipe()  # List to Main
+    main_So_conn, TCP_conn = Pipe()  # Main to Socket_Server
+    main_conn, client_conn = Pipe()  # Main to client
     tcp_p = serverTCP(TCP_conn, client_conn, client_list)
-    up_ir_p = list_IRDevices(list_conn, list_TCP_conn)
+    up_ir_p = list_Devices(list_conn, list_TCP_conn)
     up_ir_p.start()
     tcp_p.start()
     dlist = {}
-    print('Loaded')
+    print("Loaded")
     while True:
         while main_So_conn.poll():
             b = main_So_conn.recv()
@@ -106,12 +125,11 @@ if __name__ == '__main__':
             print(a)
         if dlist != {}:
             print(dlist)
-            usr_r = input("msg: ")
-            if usr_r == '':
+            usr_r = input("Mensagem: ")
+            if usr_r == "":
                 b = main_conn.recv()
                 print(b)
             else:
                 c = process_message(usr_r)
                 main_conn.send(c)
                 wait((main_conn,))
-    
